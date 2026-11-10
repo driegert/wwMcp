@@ -1,0 +1,7 @@
+{
+  "default_profile": "dev",
+  "profiles": {
+    "dev":  { "base_url": "http://localhost:8000", "api_key": "<labelled key>" },
+    "prod": { "base_url": "https://wwapi.example.org",    "api_key": "<labelled key>" }
+  }
+}

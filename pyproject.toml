@@ -1,0 +1,25 @@
+[project]
+name = "wwmcp"
+version = "0.1.0"
+description = "MCP server for authoring wwApi content (concept questions, scenarios)"
+readme = "README.md"
+authors = [
+    { name = "Dave Riegert" }
+]
+requires-python = ">=3.12"
+dependencies = [
+    "httpx>=0.28.1",
+    "mcp[cli]>=2.3.0",
+]
+
+[project.scripts]
+wwmcp = "wwmcp.server:main"
+
+[build-system]
+requires = ["uv_build>=0.9.9,<0.10.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "pytest>=9.2.0",
+]

@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+# Start a pi session that can author wwApi content. Ordinary pi sessions never
+# see the wwapi MCP server; this launcher is the explicit start.
+#
+#   pi-wwapi            # dev (default while wwMcp is being built)
+#   pi-wwapi prod       # production
+#   pi-wwapi dev -- <any pi arguments>
+set -euo pipefail
+
+target="${1:-dev}"
+[ $# -gt 0 ] && shift
+[ "${1:-}" = "--" ] && shift
+
+case "$target" in
+  dev|prod) ;;
+  *) echo "usage: pi-wwapi [dev|prod] [-- pi args]" >&2; exit 2 ;;
+esac
+
+export WWMCP_PROFILE="$target"     # which wwApi the MCP server binds to
+export PI_AGENT_PROFILE="wwapi"    # mcp-scope.ts: register only the wwapi server
+echo "pi-wwapi: authoring against the '$target' wwApi" >&2
+exec pi "$@"

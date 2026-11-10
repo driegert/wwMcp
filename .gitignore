@@ -1,0 +1,28 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+dist/
+build/
+*.egg-info/
+
+# Secrets and local config: keys live in ~/.config/wwmcp/config.json, never here
+.env
+.env.*
+config.json
+*.key
+
+# Databases and cleanup backups
+*.sqlite3
+*.sqlite3-*
+*.bak-*
+
+# Editors, OS, agent scratch
+.idea/
+.vscode/
+.DS_Store
+*.swp
+.claude/
+.pi/
