@@ -72,6 +72,14 @@ def test_wire_rejects_unconvertible_answers():
             logic.to_wire_question(bad)
 
 
+def test_wire_allowlist():
+    w = logic.to_wire_question({
+        "format": "tf", "text": "s", "is_true": True, "webwork": False,
+        "status": "approved", "owner": "x", "expect_status": "approved", "question_id": "q",
+    })
+    assert set(w) == {"format", "text", "answer", "webwork"}
+
+
 def test_wire_pinned_format_wins():
     # an edit cannot switch format: the stored row's format is pinned
     w = logic.to_wire_question({"format": "mc", "is_true": True}, fmt="true_false")

@@ -41,9 +41,28 @@ export function target(env: NodeJS.ProcessEnv = process.env): string {
 	return "UNKNOWN TARGET (could not read the wwmcp config)";
 }
 
-function summary(input: unknown): string {
-	const text = JSON.stringify(input ?? {}, null, 2);
-	return text.length > 1500 ? `${text.slice(0, 1500)}\n… (truncated)` : text;
+// The instructor must see everything they approve: nothing is ever truncated.
+// What decides correctness and placement comes first (ids, tag, the answer),
+// the long text last. An input too big to show whole is refused, not clipped.
+const MAX_SHOWN = 8000; // a 2000-char stem + five 500-char choices fits well inside
+const FIRST = ["question_id", "scenario_id", "tag", "sub_method", "method_type"];
+const ANSWER = ["is_true", "choices", "answer", "webwork", "tags", "format"];
+
+function ordered(obj: Record<string, unknown>): Record<string, unknown> {
+	const out: Record<string, unknown> = {};
+	const keys = Object.keys(obj);
+	for (const k of [...FIRST, ...ANSWER]) if (k in obj) out[k] = obj[k];
+	for (const k of keys) if (!(k in out) && k !== "text") out[k] = obj[k];
+	if ("text" in obj) out.text = obj.text;
+	return out;
+}
+
+export function summary(input: unknown): string | undefined {
+	const top = ordered((input ?? {}) as Record<string, unknown>);
+	if (top.changes && typeof top.changes === "object" && !Array.isArray(top.changes))
+		top.changes = ordered(top.changes as Record<string, unknown>);
+	const text = JSON.stringify(top, null, 2);
+	return text.length > MAX_SHOWN ? undefined : text;
 }
 
 export default function (pi: ExtensionAPI) {
@@ -57,7 +76,13 @@ export default function (pi: ExtensionAPI) {
 				reason: `${tool} changes what students are served and needs the instructor's confirmation, which this process cannot ask for. Report what you would have done instead.`,
 			};
 
-		const ok = await ctx.ui.confirm(`wwApi [${target()}]: ${tool}?`, summary(event.input));
+		const shown = summary(event.input);
+		if (shown === undefined)
+			return {
+				block: true,
+				reason: `${tool} was refused: its arguments are too long to show the instructor in full, and nothing is approved unseen. Make the change in smaller parts.`,
+			};
+		const ok = await ctx.ui.confirm(`wwApi [${target()}]: ${tool}?`, shown);
 		if (!ok)
 			return {
 				block: true,

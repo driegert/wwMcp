@@ -19,6 +19,7 @@ FORMAT_ALIASES = {
 
 
 STATUSES = ("draft", "approved", "retired")
+WIRE_KEYS = ("format", "text", "answer", "tags", "webwork")
 
 # wwApi ids: q_<owner>_<NNNN>, <prefix>_<owner>_<NN>, bank ids like sm_01.
 # Checked before an id is put in a URL path.
@@ -83,9 +84,10 @@ def to_wire_question(q: dict[str, Any], fmt: str | None = None) -> dict[str, Any
             }
         else:
             raise ValueError("format must be tf (true_false) or mc (multiple_choice)")
-    for k in ("is_true", "choices", "randomize_choices"):
-        q.pop(k, None)
-    return q
+    # Allowlist: only wwApi's question fields ever leave here. A caller cannot
+    # smuggle status, owner or expect_status through `changes` (wwApi drops
+    # unknown keys too; this does not rely on it).
+    return {k: q[k] for k in WIRE_KEYS if k in q}
 
 
 def correct_answer(row: dict[str, Any]) -> str | None:
